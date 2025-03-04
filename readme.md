@@ -2,6 +2,19 @@
 
 This is a basic rules engine that can be used to evaluate rules and set a result.
 
+## Golden rules
+
+- The evaluate function must return a boolean
+- The evaluate function must not change the context
+- The evaluate function must not change the results
+
+- The action function must not change the context
+- The action function must not change the results
+- The action function must return a partial result
+
+- The rules are evaluated in the order they are added
+- The rules are evaluated until the first rule that returns true
+
 ## Usage
 
 ```javascript
