@@ -27,7 +27,7 @@ interface TestResult extends Result {
   finalCount: number;
 }
 
-describe('KeudRuleEngine', () => {
+describe('Engine', () => {
   // Setup test variables
   let engine: Engine<TestContext, TestResult>;
   let initialContext: TestContext;
@@ -61,32 +61,32 @@ describe('KeudRuleEngine', () => {
     jest.restoreAllMocks();
   });
 
-  test('should initialize with provided context, rules, and result', () => {
+  it('should initialize with provided context, rules, and result', () => {
     expect(engine.context).toEqual(initialContext);
     expect(engine.rules).toEqual(rules);
     expect(engine.result).toEqual(initialResult);
   });
 
-  test('should initialize with empty values when not provided', () => {
+  it('should initialize with empty values when not provided', () => {
     const emptyEngine = new Engine(null as any, null as any, null as any);
     expect(emptyEngine.context).toEqual({});
     expect(emptyEngine.rules).toEqual([]);
     expect(emptyEngine.result).toEqual({});
   });
 
-  test('should update context with setContext', () => {
+  it('should update context with setContext', () => {
     const newContext = { count: 5, flag: true };
     engine.setContext(newContext);
     expect(engine.context).toEqual(newContext);
   });
 
-  test('should set initial result with setInitialResult', () => {
+  it('should set initial result with setInitialResult', () => {
     const newResult = { finalCount: 10 };
     engine.setInitialResult(newResult);
     expect(engine.getResult()).toEqual(newResult);
   });
 
-  test('should update rules with setRules', () => {
+  it('should update rules with setRules', () => {
     const newRules: Array<Rule<TestContext>> = [
       {
         evaluate: () => true,
@@ -97,11 +97,11 @@ describe('KeudRuleEngine', () => {
     expect(engine.rules).toEqual(newRules);
   });
 
-  test('should return the result with getResult', () => {
+  it('should return the result with getResult', () => {
     expect(engine.getResult()).toEqual(initialResult);
   });
 
-  test('should execute rules until no rule evaluates to true', () => {
+  it('should execute rules until no rule evaluates to true', () => {
     engine.run();
     
     // After running, count should be 3 and flag should be true
@@ -109,7 +109,7 @@ describe('KeudRuleEngine', () => {
     expect(engine.context.flag).toBe(true);
   });
 
-  test('should maintain method chaining', () => {
+  it('should maintain method chaining', () => {
     const newContext = { count: 1, flag: false };
     const newRules: Array<Rule<TestContext>> = [];
     
@@ -121,7 +121,7 @@ describe('KeudRuleEngine', () => {
     expect(returnedEngine).toBe(engine);
   });
 
-  test('should stop when no rules evaluate to true', () => {
+  it('should stop when no rules evaluate to true', () => {
     // Set initial context to a state where no rules will match
     engine.setContext({ count: 10, flag: true });
     engine.run();

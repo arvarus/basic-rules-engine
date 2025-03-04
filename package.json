@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "rule engine",
   "main": "bin/index.js",
-  "license":"GPL-3.0-only",
+  "license": "GPL-3.0-only",
   "scripts": {
     "compile": "tsc -b",
     "compile:clean": "tsc -b --clean",

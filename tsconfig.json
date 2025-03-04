@@ -13,7 +13,8 @@
     "skipLibCheck": true,
     "sourceMap": true,
     "strict": true,
-    "target": "ES2022"
+    "target": "ES2022",
+    "types": ["jest"]
   },
-  "exclude": ["bin", "node_modules", "./**/*.test.ts"]
+  "exclude": ["bin", "node_modules"]
 }
