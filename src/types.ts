@@ -18,17 +18,17 @@ interface Context {};
 
 interface Result {};
 
-type Rule<C extends Context = Context> = {
+type Rule<C extends Context = Context, R extends Result = Result> = {
   name?: string;
-  evaluate: (context: C) => boolean;
-  action: (context: C) => Partial<C>;
+  evaluate: (context: C, result: Partial<R>) => boolean;
+  action: (context: C, result: Partial<R>) => Partial<R>;
 }
 
 type RuleEngine<C extends Context = Context, R extends Result = Result> = {
-  getResult: () => R;
-  setContext: (context: C) => RuleEngine<C>;
-  setRules: (rules: Array<Rule<C>>) => RuleEngine<C>;
-  run: () => void;
+  getResult: () => Partial<R>;
+  setInitialResult: (result: Partial<R>) => RuleEngine<C, Partial<R>>;
+  setRules: (rules: Array<Rule<C, Partial<R>>>) => RuleEngine<C, Partial<R>>;
+  run: () => RuleEngine<C, Partial<R>>;
 };
 
 export type { Context, RuleEngine, Result, Rule };

@@ -11,8 +11,12 @@
   },
   "type": "module",
   "devDependencies": {
+    "@types/deep-freeze-strict": "^1.1.2",
     "@types/jest": "^29.5.14",
     "jest": "^29.7.0",
     "ts-jest": "^29.2.6"
+  },
+  "dependencies": {
+    "deep-freeze-strict": "^1.1.1"
   }
 }
