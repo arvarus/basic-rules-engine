@@ -15,12 +15,20 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 import deepFreeze from 'deep-freeze-strict';
-import { RuleEngine, RuleEngineConstructor, Rule, Context, Result } from './types';
+import { 
+  Context, 
+  Result, 
+  RunOptions,
+  Rule ,
+  RuleEngine, 
+  RuleEngineConstructor, 
+ } from './types';
 
 const Engine: RuleEngineConstructor = class <C extends Context = Context, R extends Result = Result> implements RuleEngine<C, R> {
   private readonly context: Readonly<C>;
   private rules: Array<Rule<C, R>>;
   private result: Partial<R>;
+  private nbIterations: number = 0;
 
   constructor(context: C, rules: Array<Rule<C, R>> = [], initialResult: Partial<R> = {}) {
     this.context = deepFreeze(context || {});
@@ -41,18 +49,30 @@ const Engine: RuleEngineConstructor = class <C extends Context = Context, R exte
     this.rules = rules;
     return this;
   };
+
+  private getNextRuleToEvaluate() {
+    return this.rules.find(rule => rule.evaluate(this.context, this.result));
+  };
   
-  run() {
-    let ruleToRun = this.rules.find(rule => rule.evaluate(this.context, this.result));
+  run(options: RunOptions = {}) {
+    const maxIterations = options.maxIterations ?? 1000;
+    this.nbIterations = 0;
+    let ruleToRun = this.getNextRuleToEvaluate();
 
     while (ruleToRun) {
+      this.nbIterations++;
+      if (this.nbIterations > maxIterations) {
+        throw new Error('Rule engine exceeded maximum number of iterations');
+      }
+
       const resultUpdates = ruleToRun.action(this.context, this.result);
 
       if (resultUpdates) {
         this.result = { ...this.result, ...resultUpdates };
       }
 
-      ruleToRun = this.rules.find(rule => rule.evaluate(this.context, this.result));
+
+      ruleToRun = this.getNextRuleToEvaluate();
     }
 
     return this;
