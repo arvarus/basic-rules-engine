@@ -24,6 +24,8 @@ type Rule<C extends Context = Context, R extends Result = Result> = {
   action: (context: C, result: Partial<R>) => Partial<R>;
 }
 
+type RuleEngineConstructor = new <C extends Context = Context, R extends Result = Result>(context: C, rules?: Array<Rule<C, R>>, initialResult?: Partial<R>) => RuleEngine<C, Partial<R>>;
+
 type RuleEngine<C extends Context = Context, R extends Result = Result> = {
   getResult: () => Partial<R>;
   setInitialResult: (result: Partial<R>) => RuleEngine<C, Partial<R>>;
@@ -31,4 +33,4 @@ type RuleEngine<C extends Context = Context, R extends Result = Result> = {
   run: () => RuleEngine<C, Partial<R>>;
 };
 
-export type { Context, RuleEngine, Result, Rule };
+export type { Context, RuleEngine, RuleEngineConstructor, Result, Rule };

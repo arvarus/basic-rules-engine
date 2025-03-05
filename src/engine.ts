@@ -15,9 +15,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 import deepFreeze from 'deep-freeze-strict';
-import { RuleEngine, Rule, Context, Result } from './types';
+import { RuleEngine, RuleEngineConstructor, Rule, Context, Result } from './types';
 
-class Engine<C extends Context = Context, R extends Result = Result> implements RuleEngine<C, Partial<R>> {
+const Engine: RuleEngineConstructor = class <C extends Context = Context, R extends Result = Result> implements RuleEngine<C, R> {
   private readonly context: Readonly<C>;
   private rules: Array<Rule<C, R>>;
   private result: Partial<R>;
