@@ -14,25 +14,21 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+import deepFreeze from 'deep-freeze-strict';
 import { RuleEngine, Rule, Context, Result } from './types';
 
-class Engine<C extends Context = Context, R extends Result = Result> implements RuleEngine<C, R> {
-  context: C;
-  rules: Array<Rule<C>>;
-  result: R;
+class Engine<C extends Context = Context, R extends Result = Result> implements RuleEngine<C, Partial<R>> {
+  private readonly context: Readonly<C>;
+  private rules: Array<Rule<C, R>>;
+  private result: Partial<R>;
 
-  constructor(context: C, rules: Array<Rule<C>>, initialResult: R) {
-    this.context = context || {};
-    this.rules = rules || [];
-    this.result = initialResult || {};
+  constructor(context: C, rules: Array<Rule<C, R>> = [], initialResult: Partial<R> = {}) {
+    this.context = deepFreeze(context || {});
+    this.rules = rules;
+    this.result = initialResult;
   };
 
-  setContext(context: C) {
-    this.context = context;
-    return this;
-  };
-
-  setInitialResult(result: R) {
+  setInitialResult(result: Partial<R>) {
     this.result = result;
     return this;
   };
@@ -41,25 +37,25 @@ class Engine<C extends Context = Context, R extends Result = Result> implements 
     return this.result;
   };
 
-  setRules(rules: Array<Rule<C>>) {
+  setRules(rules: Array<Rule<C, R>>) {
     this.rules = rules;
     return this;
   };
   
   run() {
-    console.log(`Running engine`);
-
-    let ruleToRun = this.rules.find(rule => rule.evaluate(this.context));
+    let ruleToRun = this.rules.find(rule => rule.evaluate(this.context, this.result));
 
     while (ruleToRun) {
-      const contextDataUpdates = ruleToRun.action(this.context);
+      const resultUpdates = ruleToRun.action(this.context, this.result);
 
-      if (contextDataUpdates) {
-        this.context = { ...this.context, ...contextDataUpdates };
+      if (resultUpdates) {
+        this.result = { ...this.result, ...resultUpdates };
       }
 
-      ruleToRun = this.rules.find(rule => rule.evaluate(this.context));
+      ruleToRun = this.rules.find(rule => rule.evaluate(this.context, this.result));
     }
+
+    return this;
   };
 };
 

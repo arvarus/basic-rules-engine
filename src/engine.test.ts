@@ -19,42 +19,44 @@ import Engine from './engine';
 
 // Define test-specific interfaces
 interface TestContext extends Context {
+  startValue: number;
+  endValue: number;
+}
+
+interface TestResult extends Result {
   count: number;
   flag: boolean;
 }
 
-interface TestResult extends Result {
-  finalCount: number;
-}
-
 describe('Engine', () => {
   // Setup test variables
-  let engine: Engine<TestContext, TestResult>;
   let initialContext: TestContext;
-  let rules: Array<Rule<TestContext>>;
-  let initialResult: TestResult;
+  let rules: Array<Rule<TestContext, TestResult>>;
+  let initialResult: Partial<TestResult>;
 
   beforeEach(() => {
     // Setup initial test data
-    initialContext = { count: 0, flag: false };
-    initialResult = { finalCount: 0 };
+    initialContext = { startValue: 0, endValue: 3 };
+    initialResult = { };
 
     // Define rules for testing
     rules = [
       {
+        name: 'Init result',
+        evaluate: (context, result) => result.count == undefined,
+        action: (context, result) => ({ count: context.startValue, flag: false }) 
+      },
+      {
         name: 'Increment count when less than 3',
-        evaluate: (context) => context.count < 3,
-        action: (context) => ({ count: context.count + 1 })
+        evaluate: (context, result) => result.flag !== true && (result.count ?? 0) < context.endValue,
+        action: (context, result) => ({ count: (result.count ?? 0) + 1 })
       },
       {
         name: 'Set flag when count equals 3',
-        evaluate: (context) => context.count === 3 && !context.flag,
-        action: (context) => ({ flag: true })
+        evaluate: (context, result) => result.count === context.endValue && !result.flag,
+        action: (context, result) => ({ flag: true })
       }
     ];
-
-    // Initialize engine
-    engine = new Engine<TestContext, TestResult>(initialContext, rules, initialResult);
   });
 
   afterEach(() => {
@@ -62,31 +64,28 @@ describe('Engine', () => {
   });
 
   it('should initialize with provided context, rules, and result', () => {
-    expect(engine.context).toEqual(initialContext);
-    expect(engine.rules).toEqual(rules);
-    expect(engine.result).toEqual(initialResult);
+    const engine = new Engine(initialContext, rules, initialResult);
+    expect((engine as any).context).toEqual(initialContext);
+    expect((engine as any).rules).toEqual(rules);
+    expect((engine as any).result).toEqual(initialResult);
   });
 
   it('should initialize with empty values when not provided', () => {
-    const emptyEngine = new Engine(null as any, null as any, null as any);
-    expect(emptyEngine.context).toEqual({});
-    expect(emptyEngine.rules).toEqual([]);
-    expect(emptyEngine.result).toEqual({});
-  });
-
-  it('should update context with setContext', () => {
-    const newContext = { count: 5, flag: true };
-    engine.setContext(newContext);
-    expect(engine.context).toEqual(newContext);
+    const emptyEngine = new Engine(null as any);
+    expect((emptyEngine as any).context).toEqual({});
+    expect((emptyEngine as any).rules).toEqual([]);
+    expect((emptyEngine as any).result).toEqual({});
   });
 
   it('should set initial result with setInitialResult', () => {
-    const newResult = { finalCount: 10 };
+    const engine = new Engine(initialContext, rules, initialResult);
+    const newResult = { count: 10 };
     engine.setInitialResult(newResult);
     expect(engine.getResult()).toEqual(newResult);
   });
 
   it('should update rules with setRules', () => {
+    const engine = new Engine(initialContext, rules, initialResult);
     const newRules: Array<Rule<TestContext>> = [
       {
         evaluate: () => true,
@@ -94,27 +93,30 @@ describe('Engine', () => {
       }
     ];
     engine.setRules(newRules);
-    expect(engine.rules).toEqual(newRules);
+    expect((engine as any).rules).toEqual(newRules);
   });
 
   it('should return the result with getResult', () => {
+    const engine = new Engine(initialContext, rules, initialResult);
     expect(engine.getResult()).toEqual(initialResult);
   });
 
   it('should execute rules until no rule evaluates to true', () => {
-    engine.run();
+    const engine = new Engine(initialContext, rules, initialResult);
+    const result = engine.run().getResult();
     
     // After running, count should be 3 and flag should be true
-    expect(engine.context.count).toBe(3);
-    expect(engine.context.flag).toBe(true);
+    expect(result.count).toBe(3);
+    expect(result.flag).toBe(true);
   });
 
   it('should maintain method chaining', () => {
     const newContext = { count: 1, flag: false };
     const newRules: Array<Rule<TestContext>> = [];
+
+    const engine = new Engine(initialContext);
     
     const returnedEngine = engine
-      .setContext(newContext)
       .setRules(newRules)
       .setInitialResult(initialResult);
     
@@ -123,10 +125,10 @@ describe('Engine', () => {
 
   it('should stop when no rules evaluate to true', () => {
     // Set initial context to a state where no rules will match
-    engine.setContext({ count: 10, flag: true });
-    engine.run();
+    const engine = new Engine({ startValue: 1, endValue: 0}, rules, initialResult);
+    const result = engine.run().getResult();
     
     // Context should remain unchanged
-    expect(engine.context.count).toBe(10);
+    expect(result.count).toBe(1);
   });
 });

@@ -40,3 +40,6 @@ const result = ruleEngine.getResult();
 - Handle errors in evaluation or actions
 - Add a safe mode to prevent infinite loops
 - Add a way to stop the execution of the rules
+- Prevent the engine to be run multiple times
+- Add tempory context ?
+- optional arguments in constructor
