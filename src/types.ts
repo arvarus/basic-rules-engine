@@ -24,8 +24,8 @@ interface RunOptions {
 
 type Rule<C extends Context = Context, R extends Result = Result> = {
   name?: string;
-  evaluate: (context: C, result: Partial<R>) => boolean;
-  action: (context: C, result: Partial<R>) => Partial<R>;
+  evaluate: (context: C, result: Partial<R>, swapBuffer: Record<string, any>) => boolean;
+  action: (context: C, result: Partial<R>, swapBuffer: Record<string, any>) => Partial<R>;
 }
 
 type RuleEngineConstructor = new <C extends Context = Context, R extends Result = Result>(context: C, rules?: Array<Rule<C, R>>, initialResult?: Partial<R>) => RuleEngine<C, Partial<R>>;

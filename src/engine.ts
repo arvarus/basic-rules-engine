@@ -29,6 +29,7 @@ const Engine: RuleEngineConstructor = class <C extends Context = Context, R exte
   private rules: Array<Rule<C, R>>;
   private result: Partial<R>;
   private nbIterations: number = 0;
+  private swapBuffer: Record<string, any> = {};
 
   constructor(context: C, rules: Array<Rule<C, R>> = [], initialResult: Partial<R> = {}) {
     this.context = deepFreeze(context || {});
@@ -51,7 +52,7 @@ const Engine: RuleEngineConstructor = class <C extends Context = Context, R exte
   };
 
   private getNextRuleToEvaluate() {
-    return this.rules.find(rule => rule.evaluate(this.context, this.result));
+    return this.rules.find(rule => rule.evaluate(this.context, this.result, this.swapBuffer));
   };
   
   run(options: RunOptions = {}) {
@@ -61,17 +62,18 @@ const Engine: RuleEngineConstructor = class <C extends Context = Context, R exte
 
     while (ruleToRun) {
       this.nbIterations++;
+      
       if (this.nbIterations > maxIterations) {
         throw new Error('Rule engine exceeded maximum number of iterations');
       }
-
-      const resultUpdates = ruleToRun.action(this.context, this.result);
-
+      
+      const resultUpdates = ruleToRun.action(this.context, this.result, this.swapBuffer);
+      
       if (resultUpdates) {
         this.result = { ...this.result, ...resultUpdates };
       }
-
-
+      
+      this.swapBuffer = {};
       ruleToRun = this.getNextRuleToEvaluate();
     }
 
