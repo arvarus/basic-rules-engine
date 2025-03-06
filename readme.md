@@ -20,15 +20,13 @@ This is a basic rules engine that can be used to evaluate rules and set a result
 ```javascript
 const { createRuleEngine } = require('@keud/rules-engine');
 
-const ruleEngine = new RuleEngine();
+const ruleEngine = new RuleEngine(context);
 
-await ruleEngine
-  .setContext(context)
+const result = await ruleEngine
   .setRules(rules)
   .setInitialResults(initialResults)
-  .run();
-
-const result = ruleEngine.getResult();
+  .run()
+  .getResult();
 ```
 
 ## Next Steps
@@ -38,8 +36,6 @@ const result = ruleEngine.getResult();
 - Add CI
 - Add async execution
 - Handle errors in evaluation or actions
-- Add a safe mode to prevent infinite loops
 - Add a way to stop the execution of the rules
 - Prevent the engine to be run multiple times
 - Add tempory context ?
-- optional arguments in constructor

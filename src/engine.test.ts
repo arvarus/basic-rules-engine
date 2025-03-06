@@ -131,4 +131,9 @@ describe('Engine', () => {
     // Context should remain unchanged
     expect(result.count).toBe(1);
   });
+
+  it('should throw an error when maximum iterations is exceeded', () => {
+    const engine = new Engine(initialContext, rules, initialResult);
+    expect(() => engine.run({ maxIterations: 1 })).toThrow('Rule engine exceeded maximum number of iterations');
+  });
 });
