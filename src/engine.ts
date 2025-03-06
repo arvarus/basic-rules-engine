@@ -51,28 +51,34 @@ const Engine: RuleEngineConstructor = class <C extends Context = Context, R exte
   };
 
   private getNextRuleToEvaluate() {
-    return this.rules.find(rule => rule.evaluate(this.context, this.result));
+    for (const rule of this.rules) {
+      const swapBuffer = rule.evaluate(this.context, this.result);
+
+      if (swapBuffer) {
+        return { rule, swapBuffer };
+      }
+    }
+    return null;
   };
   
   run(options: RunOptions = {}) {
     const maxIterations = options.maxIterations ?? 1000;
     this.nbIterations = 0;
-    let ruleToRun = this.getNextRuleToEvaluate();
+    let ruleToRunWithSwap = this.getNextRuleToEvaluate();
 
-    while (ruleToRun) {
+    while (ruleToRunWithSwap) {
       this.nbIterations++;
       if (this.nbIterations > maxIterations) {
         throw new Error('Rule engine exceeded maximum number of iterations');
       }
 
-      const resultUpdates = ruleToRun.action(this.context, this.result);
+      const resultUpdates = ruleToRunWithSwap.rule.action(this.context, this.result, ruleToRunWithSwap.swapBuffer);
 
       if (resultUpdates) {
         this.result = { ...this.result, ...resultUpdates };
       }
 
-
-      ruleToRun = this.getNextRuleToEvaluate();
+      ruleToRunWithSwap = this.getNextRuleToEvaluate();
     }
 
     return this;

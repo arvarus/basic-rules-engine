@@ -43,17 +43,17 @@ describe('Engine', () => {
     rules = [
       {
         name: 'Init result',
-        evaluate: (context, result) => result.count == undefined,
+        evaluate: (context, result) => result.count == undefined ?{ run: true}: null,
         action: (context, result) => ({ count: context.startValue, flag: false }) 
       },
       {
         name: 'Increment count when less than 3',
-        evaluate: (context, result) => result.flag !== true && (result.count ?? 0) < context.endValue,
+        evaluate: (context, result) => result.flag !== true && (result.count ?? 0) < context.endValue ? {run: true} : null,
         action: (context, result) => ({ count: (result.count ?? 0) + 1 })
       },
       {
         name: 'Set flag when count equals 3',
-        evaluate: (context, result) => result.count === context.endValue && !result.flag,
+        evaluate: (context, result) => result.count === context.endValue && !result.flag ? {run: true} : null,
         action: (context, result) => ({ flag: true })
       }
     ];
@@ -88,7 +88,7 @@ describe('Engine', () => {
     const engine = new Engine(initialContext, rules, initialResult);
     const newRules: Array<Rule<TestContext>> = [
       {
-        evaluate: () => true,
+        evaluate: () => ({ run: true }),
         action: () => ({})
       }
     ];
