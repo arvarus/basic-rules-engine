@@ -18,6 +18,10 @@ interface Context {};
 
 interface Result {};
 
+interface RunOptions {
+  maxIterations?: number;
+}
+
 type Rule<C extends Context = Context, R extends Result = Result> = {
   name?: string;
   evaluate: (context: C, result: Partial<R>) => boolean;
@@ -30,7 +34,14 @@ type RuleEngine<C extends Context = Context, R extends Result = Result> = {
   getResult: () => Partial<R>;
   setInitialResult: (result: Partial<R>) => RuleEngine<C, Partial<R>>;
   setRules: (rules: Array<Rule<C, Partial<R>>>) => RuleEngine<C, Partial<R>>;
-  run: () => RuleEngine<C, Partial<R>>;
+  run: (options?: RunOptions) => RuleEngine<C, Partial<R>>;
 };
 
-export type { Context, RuleEngine, RuleEngineConstructor, Result, Rule };
+export type { 
+  Context, 
+  Result, 
+  RunOptions,
+  Rule ,
+  RuleEngine, 
+  RuleEngineConstructor, 
+};
