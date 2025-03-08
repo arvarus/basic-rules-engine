@@ -38,4 +38,3 @@ const result = await ruleEngine
 - Handle errors in evaluation or actions
 - Add a way to stop the execution of the rules
 - Prevent the engine to be run multiple times
-- Add tempory context ?
