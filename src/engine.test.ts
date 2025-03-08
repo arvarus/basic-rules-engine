@@ -111,7 +111,6 @@ describe('Engine', () => {
   });
 
   it('should maintain method chaining', () => {
-    const newContext = { count: 1, flag: false };
     const newRules: Array<Rule<TestContext>> = [];
 
     const engine = new Engine(initialContext);
