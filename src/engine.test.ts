@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-import { Rule, Context, Result } from './types';
+import { Rule, Context, Result, SwapBuffer } from './types';
 import Engine from './engine';
 
 // Define test-specific interfaces
@@ -134,5 +134,32 @@ describe('Engine', () => {
   it('should throw an error when maximum iterations is exceeded', () => {
     const engine = new Engine(initialContext, rules, initialResult);
     expect(() => engine.run({ maxIterations: 1 })).toThrow('Rule engine exceeded maximum number of iterations');
+  });
+
+  it('should use swapbuffer to store intermediate values', () => {
+    interface TestBuffer extends SwapBuffer {
+      temp: number;
+    }
+
+    const rulesWithSwapBuffer: Array<Rule<TestContext, TestResult, Partial<TestBuffer>>> = [
+      {
+        name: 'Test Swap Buffer',
+        swapBuffer: {},
+        evaluate: function (context, result) {
+          this.swapBuffer ? this.swapBuffer.temp = 42 : this.swapBuffer = { temp: 42 };
+          return result.count === undefined;
+        },
+        action: function (context, result) { 
+          return { count: this.swapBuffer?.temp };
+        }
+      },
+    ];
+
+    const engine = new Engine({ startValue: 0, endValue: 0 }, rulesWithSwapBuffer, initialResult);
+    const result = engine.run().getResult();
+    
+    // Context should remain unchanged
+    expect(result.count).toBe(42);
+
   });
 });
