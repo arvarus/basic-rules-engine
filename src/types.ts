@@ -22,8 +22,13 @@ interface RunOptions {
   maxIterations?: number;
 }
 
-type Rule<C extends Context = Context, R extends Result = Result> = {
+interface SwapBuffer {
+  [key: string]: any;
+}
+
+type Rule<C extends Context = Context, R extends Result = Result, S extends SwapBuffer = SwapBuffer> = {
   name?: string;
+  swapBuffer?: S;
   evaluate: (context: C, result: Partial<R>) => boolean;
   action: (context: C, result: Partial<R>) => Partial<R>;
 }
@@ -44,4 +49,5 @@ export type {
   Rule ,
   RuleEngine, 
   RuleEngineConstructor, 
+  SwapBuffer,
 };
