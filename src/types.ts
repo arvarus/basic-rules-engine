@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2025 - PPRB
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -14,9 +14,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-interface Context {};
+interface Context {}
 
-interface Result {};
+interface Result {}
 
 interface RunOptions {
   maxIterations?: number;
@@ -26,14 +26,22 @@ interface SwapBuffer {
   [key: string]: any;
 }
 
-type Rule<C extends Context = Context, R extends Result = Result, S extends SwapBuffer = SwapBuffer> = {
+type Rule<
+  C extends Context = Context,
+  R extends Result = Result,
+  S extends SwapBuffer = SwapBuffer,
+> = {
   name?: string;
   swapBuffer?: S;
   evaluate: (context: C, result: Partial<R>) => boolean;
   action: (context: C, result: Partial<R>) => Partial<R>;
-}
+};
 
-type RuleEngineConstructor = new <C extends Context = Context, R extends Result = Result>(context: C, rules?: Array<Rule<C, R>>, initialResult?: Partial<R>) => RuleEngine<C, Partial<R>>;
+type RuleEngineConstructor = new <C extends Context = Context, R extends Result = Result>(
+  context: C,
+  rules?: Array<Rule<C, R>>,
+  initialResult?: Partial<R>,
+) => RuleEngine<C, Partial<R>>;
 
 type RuleEngine<C extends Context = Context, R extends Result = Result> = {
   getResult: () => Partial<R>;
@@ -42,12 +50,4 @@ type RuleEngine<C extends Context = Context, R extends Result = Result> = {
   run: (options?: RunOptions) => RuleEngine<C, Partial<R>>;
 };
 
-export type { 
-  Context, 
-  Result, 
-  RunOptions,
-  Rule ,
-  RuleEngine, 
-  RuleEngineConstructor, 
-  SwapBuffer,
-};
+export type { Context, Result, RunOptions, Rule, RuleEngine, RuleEngineConstructor, SwapBuffer };

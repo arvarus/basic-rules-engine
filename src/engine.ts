@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2025 - PPRB
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -15,16 +15,11 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 import deepFreeze from 'deep-freeze-strict';
-import { 
-  Context, 
-  Result, 
-  RunOptions,
-  Rule ,
-  RuleEngine, 
-  RuleEngineConstructor, 
- } from './types';
+import { Context, Result, RunOptions, Rule, RuleEngine, RuleEngineConstructor } from './types';
 
-const Engine: RuleEngineConstructor = class <C extends Context = Context, R extends Result = Result> implements RuleEngine<C, R> {
+const Engine: RuleEngineConstructor = class<C extends Context = Context, R extends Result = Result>
+  implements RuleEngine<C, R>
+{
   private readonly context: Readonly<C>;
   private rules: Array<Rule<C, R>>;
   private result: Partial<R>;
@@ -34,26 +29,26 @@ const Engine: RuleEngineConstructor = class <C extends Context = Context, R exte
     this.context = deepFreeze(context || {});
     this.rules = rules;
     this.result = initialResult;
-  };
+  }
 
   setInitialResult(result: Partial<R>) {
     this.result = result;
     return this;
-  };
+  }
 
   getResult() {
     return this.result;
-  };
+  }
 
   setRules(rules: Array<Rule<C, R>>) {
     this.rules = rules;
     return this;
-  };
+  }
 
   private getNextRuleToEvaluate() {
-    return this.rules.find(rule => rule.evaluate(this.context, this.result));
-  };
-  
+    return this.rules.find((rule) => rule.evaluate(this.context, this.result));
+  }
+
   run(options: RunOptions = {}) {
     const maxIterations = options.maxIterations ?? 1000;
     this.nbIterations = 0;
@@ -71,12 +66,11 @@ const Engine: RuleEngineConstructor = class <C extends Context = Context, R exte
         this.result = { ...this.result, ...resultUpdates };
       }
 
-
       ruleToRun = this.getNextRuleToEvaluate();
     }
 
     return this;
-  };
+  }
 };
 
 export default Engine;
