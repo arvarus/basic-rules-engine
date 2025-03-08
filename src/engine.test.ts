@@ -44,7 +44,7 @@ describe('Engine', () => {
       {
         name: 'Init result',
         evaluate: (context, result) => result.count == undefined,
-        action: (context, result) => ({ count: context.startValue, flag: false }),
+        action: (context) => ({ count: context.startValue, flag: false }),
       },
       {
         name: 'Increment count when less than 3',
@@ -55,7 +55,7 @@ describe('Engine', () => {
       {
         name: 'Set flag when count equals 3',
         evaluate: (context, result) => result.count === context.endValue && !result.flag,
-        action: (context, result) => ({ flag: true }),
+        action: () => ({ flag: true }),
       },
     ];
   });
@@ -147,10 +147,14 @@ describe('Engine', () => {
         name: 'Test Swap Buffer',
         swapBuffer: {},
         evaluate: function (context, result) {
-          this.swapBuffer ? (this.swapBuffer.temp = 42) : (this.swapBuffer = { temp: 42 });
+          if (this.swapBuffer) {
+            this.swapBuffer.temp = 42;
+          } else {
+            this.swapBuffer = { temp: 42 };
+          }
           return result.count === undefined;
         },
-        action: function (context, result) {
+        action: function () {
           return { count: this.swapBuffer?.temp };
         },
       },
