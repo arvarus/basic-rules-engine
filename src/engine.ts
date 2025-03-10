@@ -31,25 +31,25 @@ const Engine: RuleEngineConstructor = class<C extends Context = Context, R exten
     this.result = initialResult;
   }
 
-  setInitialResult(result: Partial<R>) {
+  setInitialResult(result: R): RuleEngine<C, R> {
     this.result = result;
     return this;
   }
 
-  getResult() {
+  getResult(): Partial<R> {
     return this.result;
   }
 
-  setRules(rules: Array<Rule<C, R>>) {
+  setRules(rules: Array<Rule<C, R>>): RuleEngine<C, R> {
     this.rules = rules;
     return this;
   }
 
-  private getNextRuleToEvaluate() {
+  private getNextRuleToEvaluate(): Rule<C, R> | undefined {
     return this.rules.find((rule) => rule.evaluate(this.context, this.result));
   }
 
-  run(options: RunOptions = {}) {
+  run(options: RunOptions = {}): RuleEngine<C, R> {
     const maxIterations = options.maxIterations ?? 1000;
     this.nbIterations = 0;
     let ruleToRun = this.getNextRuleToEvaluate();

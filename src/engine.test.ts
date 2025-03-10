@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-import { Rule, Context, Result, SwapBuffer } from './types';
+import { Rule, Context, Result, SwapBuffer, RuleEngine } from './types';
 import Engine from './engine';
 
 // Define test-specific interfaces
@@ -27,6 +27,12 @@ interface TestResult extends Result {
   count: number;
   flag: boolean;
 }
+
+type EngineWithPrivates = RuleEngine<TestContext, TestResult> & {
+  context: TestContext;
+  result: TestResult;
+  rules: Array<Rule<TestContext, TestResult>>;
+};
 
 describe('Engine', () => {
   // Setup test variables
@@ -43,19 +49,19 @@ describe('Engine', () => {
     rules = [
       {
         name: 'Init result',
-        evaluate: (context, result) => result.count == undefined,
-        action: (context) => ({ count: context.startValue, flag: false }),
+        evaluate: (context, result): boolean => result.count == undefined,
+        action: (context): Partial<TestResult> => ({ count: context.startValue, flag: false }),
       },
       {
         name: 'Increment count when less than 3',
-        evaluate: (context, result) =>
+        evaluate: (context, result): boolean =>
           result.flag !== true && (result.count ?? 0) < context.endValue,
-        action: (context, result) => ({ count: (result.count ?? 0) + 1 }),
+        action: (context, result): Partial<TestResult> => ({ count: (result.count ?? 0) + 1 }),
       },
       {
         name: 'Set flag when count equals 3',
-        evaluate: (context, result) => result.count === context.endValue && !result.flag,
-        action: () => ({ flag: true }),
+        evaluate: (context, result): boolean => result.count === context.endValue && !result.flag,
+        action: (): Partial<TestResult> => ({ flag: true }),
       },
     ];
   });
@@ -66,16 +72,16 @@ describe('Engine', () => {
 
   it('should initialize with provided context, rules, and result', () => {
     const engine = new Engine(initialContext, rules, initialResult);
-    expect((engine as any).context).toEqual(initialContext);
-    expect((engine as any).rules).toEqual(rules);
-    expect((engine as any).result).toEqual(initialResult);
+    expect((engine as EngineWithPrivates).context).toEqual(initialContext);
+    expect((engine as EngineWithPrivates).rules).toEqual(rules);
+    expect((engine as EngineWithPrivates).result).toEqual(initialResult);
   });
 
   it('should initialize with empty values when not provided', () => {
     const emptyEngine = new Engine(null as any);
-    expect((emptyEngine as any).context).toEqual({});
-    expect((emptyEngine as any).rules).toEqual([]);
-    expect((emptyEngine as any).result).toEqual({});
+    expect((emptyEngine as EngineWithPrivates).context).toEqual({});
+    expect((emptyEngine as EngineWithPrivates).rules).toEqual([]);
+    expect((emptyEngine as EngineWithPrivates).result).toEqual({});
   });
 
   it('should set initial result with setInitialResult', () => {
@@ -94,7 +100,7 @@ describe('Engine', () => {
       },
     ];
     engine.setRules(newRules);
-    expect((engine as any).rules).toEqual(newRules);
+    expect((engine as EngineWithPrivates).rules).toEqual(newRules);
   });
 
   it('should return the result with getResult', () => {
@@ -146,7 +152,7 @@ describe('Engine', () => {
       {
         name: 'Test Swap Buffer',
         swapBuffer: {},
-        evaluate: function (context, result) {
+        evaluate: function (context, result): boolean {
           if (this.swapBuffer) {
             this.swapBuffer.temp = 42;
           } else {
@@ -154,7 +160,7 @@ describe('Engine', () => {
           }
           return result.count === undefined;
         },
-        action: function () {
+        action: function (): Partial<TestResult> {
           return { count: this.swapBuffer?.temp };
         },
       },

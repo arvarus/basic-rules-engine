@@ -18,12 +18,10 @@ type Context = object;
 
 type Result = object;
 
+type SwapBuffer = object;
+
 interface RunOptions {
   maxIterations?: number;
-}
-
-interface SwapBuffer {
-  [key: string]: any;
 }
 
 type Rule<
@@ -40,14 +38,14 @@ type Rule<
 type RuleEngineConstructor = new <C extends Context = Context, R extends Result = Result>(
   context: C,
   rules?: Array<Rule<C, R>>,
-  initialResult?: Partial<R>,
-) => RuleEngine<C, Partial<R>>;
+  initialResult?: R,
+) => RuleEngine<C, R>;
 
 type RuleEngine<C extends Context = Context, R extends Result = Result> = {
   getResult: () => Partial<R>;
-  setInitialResult: (result: Partial<R>) => RuleEngine<C, Partial<R>>;
-  setRules: (rules: Array<Rule<C, Partial<R>>>) => RuleEngine<C, Partial<R>>;
-  run: (options?: RunOptions) => RuleEngine<C, Partial<R>>;
+  setInitialResult: (result: R) => RuleEngine<C, R>;
+  setRules: (rules: Array<Rule<C, R>>) => RuleEngine<C, R>;
+  run: (options?: RunOptions) => RuleEngine<C, R>;
 };
 
 export type { Context, Result, RunOptions, Rule, RuleEngine, RuleEngineConstructor, SwapBuffer };
