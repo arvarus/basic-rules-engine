@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2025 - PPRB
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -14,40 +14,38 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-interface Context {};
+type Context = object;
 
-interface Result {};
+type Result = object;
+
+type SwapBuffer = object;
 
 interface RunOptions {
   maxIterations?: number;
 }
 
-interface SwapBuffer {
-  [key: string]: any;
-}
-
-type Rule<C extends Context = Context, R extends Result = Result, S extends SwapBuffer = SwapBuffer> = {
+type Rule<
+  C extends Context = Context,
+  R extends Result = Result,
+  S extends SwapBuffer = SwapBuffer,
+> = {
   name?: string;
   swapBuffer?: S;
   evaluate: (context: C, result: Partial<R>) => boolean;
   action: (context: C, result: Partial<R>) => Partial<R>;
-}
+};
 
-type RuleEngineConstructor = new <C extends Context = Context, R extends Result = Result>(context: C, rules?: Array<Rule<C, R>>, initialResult?: Partial<R>) => RuleEngine<C, Partial<R>>;
+type RuleEngineConstructor = new <C extends Context = Context, R extends Result = Result>(
+  context: C,
+  rules?: Array<Rule<C, R>>,
+  initialResult?: R,
+) => RuleEngine<C, R>;
 
 type RuleEngine<C extends Context = Context, R extends Result = Result> = {
   getResult: () => Partial<R>;
-  setInitialResult: (result: Partial<R>) => RuleEngine<C, Partial<R>>;
-  setRules: (rules: Array<Rule<C, Partial<R>>>) => RuleEngine<C, Partial<R>>;
-  run: (options?: RunOptions) => RuleEngine<C, Partial<R>>;
+  setInitialResult: (result: R) => RuleEngine<C, R>;
+  setRules: (rules: Array<Rule<C, R>>) => RuleEngine<C, R>;
+  run: (options?: RunOptions) => RuleEngine<C, R>;
 };
 
-export type { 
-  Context, 
-  Result, 
-  RunOptions,
-  Rule ,
-  RuleEngine, 
-  RuleEngineConstructor, 
-  SwapBuffer,
-};
+export type { Context, Result, RunOptions, Rule, RuleEngine, RuleEngineConstructor, SwapBuffer };
