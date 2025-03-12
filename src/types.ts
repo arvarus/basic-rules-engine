@@ -31,8 +31,8 @@ type Rule<
 > = {
   name?: string;
   swapBuffer?: S;
-  evaluate: (context: C, result: Partial<R>) => boolean;
-  action: (context: C, result: Partial<R>) => Partial<R>;
+  evaluate: (context: C, result: Partial<R>) => Promise<boolean>;
+  action: (context: C, result: Partial<R>) => Promise<Partial<R>>;
 };
 
 type RuleEngineConstructor = new <C extends Context = Context, R extends Result = Result>(
@@ -45,7 +45,7 @@ type RuleEngine<C extends Context = Context, R extends Result = Result> = {
   getResult: () => Partial<R>;
   setInitialResult: (result: R) => RuleEngine<C, R>;
   setRules: (rules: Array<Rule<C, R>>) => RuleEngine<C, R>;
-  run: (options?: RunOptions) => RuleEngine<C, R>;
+  run: (options?: RunOptions) => Promise<RuleEngine<C, R>>;
 };
 
 export type { Context, Result, RunOptions, Rule, RuleEngine, RuleEngineConstructor, SwapBuffer };

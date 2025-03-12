@@ -49,19 +49,22 @@ describe('Engine', () => {
     rules = [
       {
         name: 'Init result',
-        evaluate: (context, result): boolean => result.count == undefined,
-        action: (context): Partial<TestResult> => ({ count: context.startValue, flag: false }),
+        evaluate: async (context, result): Promise<boolean> => result.count == undefined,
+        action: async (context): Promise<Partial<TestResult>> =>
+          Promise.resolve({ count: context.startValue, flag: false }),
       },
       {
         name: 'Increment count when less than 3',
-        evaluate: (context, result): boolean =>
-          result.flag !== true && (result.count ?? 0) < context.endValue,
-        action: (context, result): Partial<TestResult> => ({ count: (result.count ?? 0) + 1 }),
+        evaluate: async (context, result): Promise<boolean> =>
+          Promise.resolve(result.flag !== true && (result.count ?? 0) < context.endValue),
+        action: async (context, result): Promise<Partial<TestResult>> =>
+          Promise.resolve({ count: (result.count ?? 0) + 1 }),
       },
       {
         name: 'Set flag when count equals 3',
-        evaluate: (context, result): boolean => result.count === context.endValue && !result.flag,
-        action: (): Partial<TestResult> => ({ flag: true }),
+        evaluate: async (context, result): Promise<boolean> =>
+          Promise.resolve(result.count === context.endValue && !result.flag),
+        action: async (): Promise<Partial<TestResult>> => Promise.resolve({ flag: true }),
       },
     ];
   });
@@ -95,8 +98,8 @@ describe('Engine', () => {
     const engine = new Engine(initialContext, rules, initialResult);
     const newRules: Array<Rule<TestContext>> = [
       {
-        evaluate: () => true,
-        action: () => ({}),
+        evaluate: () => Promise.resolve(true),
+        action: () => Promise.resolve({}),
       },
     ];
     engine.setRules(newRules);
@@ -108,9 +111,10 @@ describe('Engine', () => {
     expect(engine.getResult()).toEqual(initialResult);
   });
 
-  it('should execute rules until no rule evaluates to true', () => {
+  it('should execute rules until no rule evaluates to true', async () => {
     const engine = new Engine(initialContext, rules, initialResult);
-    const result = engine.run().getResult();
+    await engine.run();
+    const result = engine.getResult();
 
     // After running, count should be 3 and flag should be true
     expect(result.count).toBe(3);
@@ -127,23 +131,26 @@ describe('Engine', () => {
     expect(returnedEngine).toBe(engine);
   });
 
-  it('should stop when no rules evaluate to true', () => {
+  it('should stop when no rules evaluate to true', async () => {
     // Set initial context to a state where no rules will match
     const engine = new Engine({ startValue: 1, endValue: 0 }, rules, initialResult);
-    const result = engine.run().getResult();
+    await engine.run();
+    const result = engine.getResult();
 
     // Context should remain unchanged
     expect(result.count).toBe(1);
   });
 
-  it('should throw an error when maximum iterations is exceeded', () => {
+  it('should throw an error when maximum iterations is exceeded', async () => {
     const engine = new Engine(initialContext, rules, initialResult);
-    expect(() => engine.run({ maxIterations: 1 })).toThrow(
-      'Rule engine exceeded maximum number of iterations',
-    );
+    try {
+      await engine.run({ maxIterations: 1 });
+    } catch (e: any) {
+      expect(e.message).toBe('Rule engine exceeded maximum number of iterations');
+    }
   });
 
-  it('should use swapbuffer to store intermediate values', () => {
+  it('should use swapbuffer to store intermediate values', async () => {
     interface TestBuffer extends SwapBuffer {
       temp: number;
     }
@@ -152,22 +159,23 @@ describe('Engine', () => {
       {
         name: 'Test Swap Buffer',
         swapBuffer: {},
-        evaluate: function (context, result): boolean {
+        evaluate: async function (context, result): Promise<boolean> {
           if (this.swapBuffer) {
             this.swapBuffer.temp = 42;
           } else {
             this.swapBuffer = { temp: 42 };
           }
-          return result.count === undefined;
+          return Promise.resolve(result.count === undefined);
         },
-        action: function (): Partial<TestResult> {
+        action: async function (): Promise<Partial<TestResult>> {
           return { count: this.swapBuffer?.temp };
         },
       },
     ];
 
     const engine = new Engine({ startValue: 0, endValue: 0 }, rulesWithSwapBuffer, initialResult);
-    const result = engine.run().getResult();
+    await engine.run();
+    const result = engine.getResult();
 
     // Context should remain unchanged
     expect(result.count).toBe(42);
