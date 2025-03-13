@@ -34,7 +34,6 @@ const result = await ruleEngine
 - Add examples
 - Add documentation
 - Add CI
-- Add async execution
 - Handle errors in evaluation or actions
 - Add a way to stop the execution of the rules
 - Prevent the engine to be run multiple times
