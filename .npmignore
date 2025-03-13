@@ -5,3 +5,4 @@ examples
 .prettierrc.json
 eslint.config.mjs
 tsconfig.tsbuildinfo
+*.test.**
