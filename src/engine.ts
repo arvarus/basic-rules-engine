@@ -45,14 +45,20 @@ const Engine: RuleEngineConstructor = class<C extends Context = Context, R exten
     return this;
   }
 
-  private getNextRuleToEvaluate(): Rule<C, R> | undefined {
-    return this.rules.find((rule) => rule.evaluate(this.context, this.result));
+  private async getNextRuleToEvaluate(): Promise<Rule<C, R> | undefined> {
+    for (const rule of this.rules) {
+      const shouldEvaluate = await rule.evaluate(this.context, this.result);
+      if (shouldEvaluate) {
+        return rule;
+      }
+    }
+    return undefined;
   }
 
-  run(options: RunOptions = {}): RuleEngine<C, R> {
+  async run(options: RunOptions = {}): Promise<RuleEngine<C, R>> {
     const maxIterations = options.maxIterations ?? 1000;
     this.nbIterations = 0;
-    let ruleToRun = this.getNextRuleToEvaluate();
+    let ruleToRun = await this.getNextRuleToEvaluate();
 
     while (ruleToRun) {
       this.nbIterations++;
@@ -60,13 +66,13 @@ const Engine: RuleEngineConstructor = class<C extends Context = Context, R exten
         throw new Error('Rule engine exceeded maximum number of iterations');
       }
 
-      const resultUpdates = ruleToRun.action(this.context, this.result);
+      const resultUpdates = await ruleToRun.action(this.context, this.result);
 
       if (resultUpdates) {
         this.result = { ...this.result, ...resultUpdates };
       }
 
-      ruleToRun = this.getNextRuleToEvaluate();
+      ruleToRun = await this.getNextRuleToEvaluate();
     }
 
     return this;
