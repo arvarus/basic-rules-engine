@@ -1,0 +1,8 @@
+.github
+coverage
+examples
+.prettierignore
+.prettierrc.json
+eslint.config.mjs
+*.tsbuildinfo
+*.test.**
