@@ -4,5 +4,7 @@ examples
 .prettierignore
 .prettierrc.json
 eslint.config.mjs
+jest.config.cjs
+tsconfig.json
 *.tsbuildinfo
 *.test.**
