@@ -68,3 +68,10 @@ console.log(ruleEngine.getResult());
 - Add examples
 - Add documentation
 - Handle errors in evaluation or actions
+
+## History
+
+- 2.0.x: (Breaking change)
+  - run function now returns the result
+- 1.0.x: Initial version
+```
