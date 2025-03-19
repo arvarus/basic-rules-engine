@@ -15,6 +15,10 @@
     "lint:fix": "eslint . --ext .ts --fix",
     "test": "jest --coverage"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/arvarus/basic-rules-engine"
+  },
   "type": "module",
   "devDependencies": {
     "@eslint/js": "^9.22.0",
