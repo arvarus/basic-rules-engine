@@ -55,7 +55,7 @@ const Engine: RuleEngineConstructor = class<C extends Context = Context, R exten
     return undefined;
   }
 
-  async run(options: RunOptions = {}): Promise<RuleEngine<C, R>> {
+  async run(options: RunOptions = {}): Promise<Partial<R>> {
     const maxIterations = options.maxIterations ?? 1000;
     this.nbIterations = 0;
     let ruleToRun = await this.getNextRuleToEvaluate();
@@ -75,7 +75,7 @@ const Engine: RuleEngineConstructor = class<C extends Context = Context, R exten
       ruleToRun = await this.getNextRuleToEvaluate();
     }
 
-    return this;
+    return this.getResult();
   }
 };
 
