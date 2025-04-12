@@ -1,6 +1,6 @@
 {
   "name": "@arvarus/basic-rules-engine",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "rule engine",
   "main": "bin/engine.js",
   "types": "bin/types.d.ts",
