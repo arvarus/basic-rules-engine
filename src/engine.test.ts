@@ -143,11 +143,9 @@ describe('Engine', () => {
 
   it('should throw an error when maximum iterations is exceeded', async () => {
     const engine = new Engine(initialContext, rules, initialResult);
-    try {
-      await engine.run({ maxIterations: 1 });
-    } catch (e: any) {
-      expect(e.message).toBe('Rule engine exceeded maximum number of iterations');
-    }
+    await expect(engine.run({ maxIterations: 1 })).rejects.toThrow(
+      'Rule engine exceeded maximum number of iterations (1). This may indicate an infinite loop.',
+    );
   });
 
   it('should use swapbuffer to store intermediate values', async () => {
@@ -179,5 +177,221 @@ describe('Engine', () => {
 
     // Context should remain unchanged
     expect(result.count).toBe(42);
+  });
+
+  describe('Error Handling', () => {
+    it('should throw error with rule name when evaluation fails', async () => {
+      const rulesWithError: Array<Rule<TestContext, TestResult>> = [
+        {
+          name: 'Failing Rule',
+          evaluate: async (): Promise<boolean> => {
+            throw new Error('Evaluation error');
+          },
+          action: async (): Promise<Partial<TestResult>> => Promise.resolve({}),
+        },
+      ];
+
+      const engine = new Engine(initialContext, rulesWithError, initialResult);
+      await expect(engine.run()).rejects.toThrow('Error evaluating rule "Failing Rule"');
+    });
+
+    it('should throw error with rule name when action fails', async () => {
+      const rulesWithError: Array<Rule<TestContext, TestResult>> = [
+        {
+          name: 'Failing Action Rule',
+          evaluate: async (): Promise<boolean> => Promise.resolve(true),
+          action: async (): Promise<Partial<TestResult>> => {
+            throw new Error('Action error');
+          },
+        },
+      ];
+
+      const engine = new Engine(initialContext, rulesWithError, initialResult);
+      await expect(engine.run()).rejects.toThrow('Error executing rule "Failing Action Rule"');
+    });
+
+    it('should continue execution when continueOnError is true', async () => {
+      let actionCalled = false;
+      const rulesWithError: Array<Rule<TestContext, TestResult>> = [
+        {
+          name: 'Failing Rule',
+          evaluate: async (): Promise<boolean> => {
+            throw new Error('Evaluation error');
+          },
+          action: async (): Promise<Partial<TestResult>> => Promise.resolve({}),
+        },
+        {
+          name: 'Working Rule',
+          evaluate: async (_context, result): Promise<boolean> =>
+            Promise.resolve(result.count === undefined),
+          action: async (): Promise<Partial<TestResult>> => {
+            actionCalled = true;
+            return Promise.resolve({ count: 100 });
+          },
+        },
+      ];
+
+      const engine = new Engine(initialContext, rulesWithError, initialResult);
+      await engine.run({ continueOnError: true });
+      expect(actionCalled).toBe(true);
+      expect(engine.getResult().count).toBe(100);
+    });
+
+    it('should call onError hook when error occurs', async () => {
+      const errors: Array<{ phase: string; message: string }> = [];
+
+      const rulesWithError: Array<Rule<TestContext, TestResult>> = [
+        {
+          name: 'Error in Evaluate',
+          evaluate: async (): Promise<boolean> => {
+            throw new Error('Eval error');
+          },
+          action: async (): Promise<Partial<TestResult>> => Promise.resolve({}),
+        },
+      ];
+
+      const engine = new Engine(initialContext, rulesWithError, initialResult);
+      await engine.run({
+        continueOnError: true,
+        onError: async (error, _rule, _context, _result, phase): Promise<void> => {
+          errors.push({ phase, message: error.message });
+        },
+      });
+
+      expect(errors).toHaveLength(1);
+      expect(errors[0].phase).toBe('evaluate');
+      expect(errors[0].message).toContain('Error in Evaluate');
+    });
+  });
+
+  describe('Execution Hooks', () => {
+    it('should call beforeRule and afterRule hooks', async () => {
+      const hookCalls: Array<string> = [];
+
+      const testRules: Array<Rule<TestContext, TestResult>> = [
+        {
+          name: 'Test Rule',
+          evaluate: async (_context, result): Promise<boolean> =>
+            Promise.resolve(result.count === undefined),
+          action: async (): Promise<Partial<TestResult>> => Promise.resolve({ count: 1 }),
+        },
+      ];
+
+      const engine = new Engine(initialContext, testRules, initialResult);
+      await engine.run({
+        beforeRule: async (rule): Promise<void> => {
+          hookCalls.push(`before:${rule.name}`);
+        },
+        afterRule: async (rule): Promise<void> => {
+          hookCalls.push(`after:${rule.name}`);
+        },
+      });
+
+      expect(hookCalls).toEqual(['before:Test Rule', 'after:Test Rule']);
+    });
+
+    it('should pass correct parameters to afterRule hook', async () => {
+      let capturedUpdates: Partial<TestResult> | undefined;
+
+      const testRules: Array<Rule<TestContext, TestResult>> = [
+        {
+          name: 'Test Rule',
+          evaluate: async (_context, result): Promise<boolean> =>
+            Promise.resolve(result.count === undefined),
+          action: async (): Promise<Partial<TestResult>> => Promise.resolve({ count: 42 }),
+        },
+      ];
+
+      const engine = new Engine(initialContext, testRules, initialResult);
+      await engine.run({
+        afterRule: async (_rule, _context, _result, updates): Promise<void> => {
+          capturedUpdates = updates;
+        },
+      });
+
+      expect(capturedUpdates).toEqual({ count: 42 });
+    });
+  });
+
+  describe('Statistics Collection', () => {
+    it('should collect execution statistics when enabled', async () => {
+      const engine = new Engine(initialContext, rules, initialResult);
+      await engine.run({ collectStats: true });
+
+      const stats = engine.getStatistics();
+      expect(stats).toBeDefined();
+      expect(stats!.totalIterations).toBe(5); // Init, 3 increments, flag set
+      expect(stats!.totalTimeMs).toBeGreaterThan(0);
+      expect(stats!.ruleStats.size).toBe(3);
+    });
+
+    it('should track rule-specific statistics', async () => {
+      const engine = new Engine(initialContext, rules, initialResult);
+      await engine.run({ collectStats: true });
+
+      const stats = engine.getStatistics();
+      const initRuleStats = stats!.ruleStats.get('Init result');
+
+      expect(initRuleStats).toBeDefined();
+      expect(initRuleStats!.evaluationCount).toBeGreaterThan(0);
+      expect(initRuleStats!.executionCount).toBe(1);
+      expect(initRuleStats!.evaluationTimeMs).toBeGreaterThanOrEqual(0);
+      expect(initRuleStats!.executionTimeMs).toBeGreaterThanOrEqual(0);
+    });
+
+    it('should not collect statistics when disabled', async () => {
+      const engine = new Engine(initialContext, rules, initialResult);
+      await engine.run({ collectStats: false });
+
+      const stats = engine.getStatistics();
+      expect(stats).toBeUndefined();
+    });
+  });
+
+  describe('Debug Mode', () => {
+    it('should log execution when debug is enabled', async () => {
+      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+
+      const engine = new Engine(initialContext, rules, initialResult);
+      await engine.run({ debug: true });
+
+      expect(consoleSpy).toHaveBeenCalled();
+      expect(consoleSpy).toHaveBeenCalledWith('[RuleEngine] Starting execution with', 3, 'rules');
+
+      consoleSpy.mockRestore();
+    });
+  });
+
+  describe('Rule Names', () => {
+    it('should use default names for unnamed rules', async () => {
+      const unnamedRules: Array<Rule<TestContext, TestResult>> = [
+        {
+          evaluate: async (): Promise<boolean> => {
+            throw new Error('Test error');
+          },
+          action: async (): Promise<Partial<TestResult>> => Promise.resolve({}),
+        },
+      ];
+
+      const engine = new Engine(initialContext, unnamedRules, initialResult);
+      await expect(engine.run()).rejects.toThrow('Error evaluating rule "Rule #1"');
+    });
+  });
+
+  describe('Improved Error Messages', () => {
+    it('should provide better error message for max iterations', async () => {
+      const infiniteRules: Array<Rule<TestContext, TestResult>> = [
+        {
+          name: 'Infinite Rule',
+          evaluate: async (): Promise<boolean> => Promise.resolve(true),
+          action: async (): Promise<Partial<TestResult>> => Promise.resolve({}),
+        },
+      ];
+
+      const engine = new Engine(initialContext, infiniteRules, initialResult);
+      await expect(engine.run({ maxIterations: 5 })).rejects.toThrow(
+        'Rule engine exceeded maximum number of iterations (5). This may indicate an infinite loop.',
+      );
+    });
   });
 });

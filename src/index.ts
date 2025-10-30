@@ -27,4 +27,9 @@ export type {
   RuleEngine,
   RuleEngineConstructor,
   SwapBuffer,
+  ExecutionStatistics,
+  RuleExecutionStats,
+  BeforeRuleHook,
+  AfterRuleHook,
+  ErrorHook,
 } from './types.js';

@@ -1,7 +1,7 @@
 {
   "name": "@arvarus/basic-rules-engine",
-  "version": "2.0.3",
-  "description": "rule engine",
+  "version": "2.1.0",
+  "description": "A powerful, type-safe rules engine with error handling, execution hooks, and debugging capabilities",
   "main": "bin/index.js",
   "types": "bin/index.d.ts",
   "license": "GPL-3.0-only",
