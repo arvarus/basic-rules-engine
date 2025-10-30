@@ -19,5 +19,12 @@
 export { default } from './engine.js';
 
 // Export all types
-export type { Context, Result, RunOptions, Rule, RuleEngine, RuleEngineConstructor, SwapBuffer } from './types.js';
-
+export type {
+  Context,
+  Result,
+  RunOptions,
+  Rule,
+  RuleEngine,
+  RuleEngineConstructor,
+  SwapBuffer,
+} from './types.js';
