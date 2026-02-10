@@ -10,7 +10,7 @@
     "compile:engine": "tsc -b",
     "compile:clean": "tsc -b --clean",
     "copy:types": "copyfiles -f src/types.d.ts bin",
-    "format": "prettier --write \"**/*.{ts,js,json}\"",
+    "format": "prettier --write \"**/*.{ts,json}\"",
     "lint": "eslint . --ext .ts",
     "lint:fix": "eslint . --ext .ts --fix",
     "test": "jest --coverage"
@@ -22,6 +22,8 @@
   "type": "module",
   "devDependencies": {
     "@eslint/js": "^9.22.0",
+    "jiti": "^2.4.2",
+    "ts-node": "^10.9.2",
     "@types/deep-freeze-strict": "^1.1.2",
     "@types/jest": "^30.0.0",
     "@typescript-eslint/eslint-plugin": "^8.48.0",
