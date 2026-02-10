@@ -81,7 +81,7 @@ describe('Engine', () => {
   });
 
   it('should initialize with empty values when not provided', () => {
-    const emptyEngine = new Engine(null as any);
+    const emptyEngine = new Engine(undefined as unknown as TestContext);
     expect((emptyEngine as EngineWithPrivates).context).toEqual({});
     expect((emptyEngine as EngineWithPrivates).rules).toEqual([]);
     expect((emptyEngine as EngineWithPrivates).result).toEqual({});
@@ -145,8 +145,9 @@ describe('Engine', () => {
     const engine = new Engine(initialContext, rules, initialResult);
     try {
       await engine.run({ maxIterations: 1 });
-    } catch (e: any) {
-      expect(e.message).toBe('Rule engine exceeded maximum number of iterations');
+    } catch (e: unknown) {
+      expect(e).toBeInstanceOf(Error);
+      expect((e as Error).message).toBe('Rule engine exceeded maximum number of iterations');
     }
   });
 
