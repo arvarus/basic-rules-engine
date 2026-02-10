@@ -17,9 +17,10 @@
 import deepFreeze from 'deep-freeze-strict';
 import { Context, Result, RunOptions, Rule, RuleEngine, RuleEngineConstructor } from './types';
 
-const Engine: RuleEngineConstructor = class<C extends Context = Context, R extends Result = Result>
-  implements RuleEngine<C, R>
-{
+const Engine: RuleEngineConstructor = class<
+  C extends Context = Context,
+  R extends Result = Result,
+> implements RuleEngine<C, R> {
   private readonly context: Readonly<C>;
   private rules: Array<Rule<C, R>>;
   private result: Partial<R>;
