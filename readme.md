@@ -114,6 +114,7 @@ npm run format    # format with Prettier
 
 ## History
 
+- 2.2.x: Removed external `deep-freeze-strict` dependency (built-in implementation)
 - 2.1.x: `run` now accepts `RunOptions` (`maxIterations`)
 - 2.0.x: (Breaking change) `run` now returns the result
 - 1.0.x: Initial version
