@@ -1,26 +1,23 @@
-# arvarus's basic rules engine
+# @arvarus/basic-rules-engine
 
-This is a basic rules engine that can be used to evaluate rules and set a result.
+A simple, async rule engine for TypeScript/JavaScript.
 
-## Golden rules
+## How it works
 
-- The evaluate function must return a boolean
-- The evaluate function must not change the context
-- The evaluate function must not change the results
+The engine takes a **context** (immutable, deep-frozen input), a list of **rules**, and an optional initial **result**. On each iteration, it finds the first rule whose `evaluate` function returns `true` and runs its `action`, which returns partial updates merged into the result. This repeats until no rule evaluates to `true`.
 
-- The action function must not change the context
-- The action function must not change the results
-- The action function must return a partial result
+## Installation
 
-- The rules are evaluated in the order they are added
-- The rules are evaluated until the first rule that returns true
+```bash
+npm install @arvarus/basic-rules-engine
+```
 
 ## Usage
 
 ```javascript
-const ruleEngine = new RuleEngine(context, rules, initialResult);
+const ruleEngine = new Engine(context, rules, initialResult);
 
-await ruleEngine.run()
+await ruleEngine.run();
 
 console.log(ruleEngine.getResult());
 ```
@@ -28,7 +25,7 @@ console.log(ruleEngine.getResult());
 ## Example
 
 ```javascript
-import RuleEngine from '@arvarus/basic-rules-engine';
+import Engine from '@arvarus/basic-rules-engine';
 
 const context = { startValue: 0, endValue: 3 };
 const initialResult = {};
@@ -55,23 +52,72 @@ const rules = [
   },
 ];
 
-const ruleEngine = new RuleEngine(context, rules, initialResult);
+const ruleEngine = new Engine(context, rules, initialResult);
 
-await ruleEngine.run()
+await ruleEngine.run();
 
 console.log(ruleEngine.getResult());
 // { count: 3, flag: true }
 ```
 
-## Next Steps
+## API
 
-- Add examples
-- Add documentation
-- Handle errors in evaluation or actions
+### `new Engine(context, rules?, initialResult?)`
+
+| Parameter | Type | Description |
+|---|---|---|
+| `context` | `object` | Immutable input data (deep-frozen) |
+| `rules` | `Rule[]` | Ordered list of rules (default: `[]`) |
+| `initialResult` | `object` | Starting result state (default: `{}`) |
+
+### Rule shape
+
+```typescript
+{
+  name?: string;
+  swapBuffer?: object;          // mutable storage local to the rule, shared between evaluate and action
+  evaluate: (context, result) => Promise<boolean>;
+  action:   (context, result) => Promise<Partial<Result>>;
+}
+```
+
+### Engine methods
+
+| Method | Description |
+|---|---|
+| `setRules(rules)` | Replace the rule list (chainable) |
+| `setInitialResult(result)` | Set the initial result (chainable) |
+| `getResult()` | Return the current result |
+| `run(options?)` | Execute rules; resolves with the final result |
+
+### `RunOptions`
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `maxIterations` | `number` | `1000` | Maximum rule evaluations; throws if exceeded (prevents infinite loops) |
+
+## Golden rules
+
+- The `evaluate` function must return a boolean
+- The `evaluate` function must not change the context or the result
+- The `action` function must not change the context or the result directly — return a partial result instead
+- Rules are evaluated in order; the first matching rule runs, then evaluation restarts from the top
+
+## Development
+
+```bash
+npm run compile   # compile TypeScript
+npm test          # run tests with coverage
+npm run lint      # lint
+npm run format    # format with Prettier
+```
 
 ## History
 
-- 2.0.x: (Breaking change)
-  - run function now returns the result
+- 2.1.x: `run` now accepts `RunOptions` (`maxIterations`)
+- 2.0.x: (Breaking change) `run` now returns the result
 - 1.0.x: Initial version
-```
+
+## License
+
+GPL-3.0-only
