@@ -15,16 +15,23 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-// Export the Engine as default
-export { default } from './engine.js';
+// inspired by deep-freeze-strict (MIT)
+function deepFreeze<T>(o: T): T {
+  Object.freeze(o);
+  const isFunc = typeof o === 'function';
+  const skip = new Set(['caller', 'callee', 'arguments']);
+  for (const prop of Object.getOwnPropertyNames(o)) {
+    if (isFunc && skip.has(prop)) continue;
+    const val = (o as Record<string, unknown>)[prop];
+    if (
+      val !== null &&
+      (typeof val === 'object' || typeof val === 'function') &&
+      !Object.isFrozen(val)
+    ) {
+      deepFreeze(val);
+    }
+  }
+  return o;
+}
 
-// Export all types
-export type {
-  Context,
-  Result,
-  RunOptions,
-  Rule,
-  RuleEngine,
-  RuleEngineConstructor,
-  SwapBuffer,
-} from './types.js';
+export default deepFreeze;
