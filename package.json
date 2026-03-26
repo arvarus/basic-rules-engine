@@ -20,6 +20,9 @@
     "url": "git+https://github.com/arvarus/basic-rules-engine.git"
   },
   "type": "module",
+  "overrides": {
+    "brace-expansion": "^5.0.5"
+  },
   "devDependencies": {
     "@eslint/js": "^9.22.0",
     "@types/jest": "^30.0.0",
