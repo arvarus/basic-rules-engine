@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-import deepFreeze from './deep-freeze';
+import deepFreeze from './deep-freeze.js';
 
 describe('deepFreeze', () => {
   it('should return the same reference', () => {
