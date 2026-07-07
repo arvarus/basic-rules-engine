@@ -14,8 +14,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-import { Rule, Context, Result, SwapBuffer, RuleEngine } from './types';
-import Engine from './engine';
+import { Rule, Context, Result, SwapBuffer, RuleEngine } from './types.js';
+import Engine from './engine.js';
 
 // Define test-specific interfaces
 interface TestContext extends Context {
