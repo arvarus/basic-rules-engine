@@ -15,7 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 import deepFreeze from './deep-freeze.js';
-import { Context, Result, RunOptions, Rule, RuleEngine, RuleEngineConstructor } from './types';
+import { Context, Result, RunOptions, Rule, RuleEngine, RuleEngineConstructor } from './types.js';
 
 const Engine: RuleEngineConstructor = class<
   C extends Context = Context,
