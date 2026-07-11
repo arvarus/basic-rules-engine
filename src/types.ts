@@ -38,12 +38,12 @@ type Rule<
 type RuleEngineConstructor = new <C extends Context = Context, R extends Result = Result>(
   context: C,
   rules?: Array<Rule<C, R>>,
-  initialResult?: R,
+  initialResult?: Partial<R>,
 ) => RuleEngine<C, R>;
 
 type RuleEngine<C extends Context = Context, R extends Result = Result> = {
   getResult: () => Partial<R>;
-  setInitialResult: (result: R) => RuleEngine<C, R>;
+  setInitialResult: (result: Partial<R>) => RuleEngine<C, R>;
   setRules: (rules: Array<Rule<C, R>>) => RuleEngine<C, R>;
   run: (options?: RunOptions) => Promise<Partial<R>>;
 };

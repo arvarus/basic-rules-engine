@@ -15,7 +15,16 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 import deepFreeze from './deep-freeze.js';
-import { Context, Result, RunOptions, Rule, RuleEngine, RuleEngineConstructor } from './types.js';
+import type {
+  Context,
+  Result,
+  RunOptions,
+  Rule,
+  RuleEngine,
+  RuleEngineConstructor,
+} from './types.js';
+
+const DEFAULT_MAX_ITERATIONS = 1000;
 
 const Engine: RuleEngineConstructor = class<
   C extends Context = Context,
@@ -24,7 +33,6 @@ const Engine: RuleEngineConstructor = class<
   private readonly context: Readonly<C>;
   private rules: Array<Rule<C, R>>;
   private result: Partial<R>;
-  private nbIterations: number = 0;
 
   constructor(context: C, rules: Array<Rule<C, R>> = [], initialResult: Partial<R> = {}) {
     this.context = deepFreeze(context || {});
@@ -32,7 +40,7 @@ const Engine: RuleEngineConstructor = class<
     this.result = initialResult;
   }
 
-  setInitialResult(result: R): RuleEngine<C, R> {
+  setInitialResult(result: Partial<R>): RuleEngine<C, R> {
     this.result = result;
     return this;
   }
@@ -46,10 +54,9 @@ const Engine: RuleEngineConstructor = class<
     return this;
   }
 
-  private async getNextRuleToEvaluate(): Promise<Rule<C, R> | undefined> {
+  private async findNextRule(): Promise<Rule<C, R> | undefined> {
     for (const rule of this.rules) {
-      const shouldEvaluate = await rule.evaluate(this.context, this.result);
-      if (shouldEvaluate) {
+      if (await rule.evaluate(this.context, this.result)) {
         return rule;
       }
     }
@@ -57,26 +64,18 @@ const Engine: RuleEngineConstructor = class<
   }
 
   async run(options: RunOptions = {}): Promise<Partial<R>> {
-    const maxIterations = options.maxIterations ?? 1000;
-    this.nbIterations = 0;
-    let ruleToRun = await this.getNextRuleToEvaluate();
+    const maxIterations = options.maxIterations ?? DEFAULT_MAX_ITERATIONS;
 
-    while (ruleToRun) {
-      this.nbIterations++;
-      if (this.nbIterations > maxIterations) {
+    for (let iteration = 0; ; iteration++) {
+      const rule = await this.findNextRule();
+      if (!rule) {
+        return this.result;
+      }
+      if (iteration >= maxIterations) {
         throw new Error('Rule engine exceeded maximum number of iterations');
       }
-
-      const resultUpdates = await ruleToRun.action(this.context, this.result);
-
-      if (resultUpdates) {
-        this.result = { ...this.result, ...resultUpdates };
-      }
-
-      ruleToRun = await this.getNextRuleToEvaluate();
+      this.result = { ...this.result, ...(await rule.action(this.context, this.result)) };
     }
-
-    return this.getResult();
   }
 };
 

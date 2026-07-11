@@ -1,18 +1,30 @@
 {
   "name": "@arvarus/basic-rules-engine",
-  "version": "2.2.3",
+  "version": "3.0.0",
   "description": "rule engine",
   "main": "bin/index.js",
   "types": "bin/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./bin/index.d.ts",
+      "default": "./bin/index.js"
+    },
+    "./package.json": "./package.json"
+  },
   "license": "GPL-3.0-only",
+  "files": [
+    "bin",
+    "!bin/*.test.*",
+    "!bin/.tsbuildinfo",
+    "gpl-3.0.txt"
+  ],
   "scripts": {
-    "compile": "npm run compile:engine && npm run copy:types",
-    "compile:engine": "tsc -b",
-    "compile:clean": "tsc -b --clean",
-    "copy:types": "copyfiles -f src/types.d.ts bin",
+    "compile": "tsc -b tsconfig.build.json",
+    "compile:clean": "tsc -b tsconfig.build.json --clean",
     "format": "prettier --write \"**/*.{ts,json}\"",
-    "lint": "eslint . --ext .ts",
-    "lint:fix": "eslint . --ext .ts --fix",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "prepack": "npm run compile",
     "test": "jest --coverage"
   },
   "repository": {
@@ -24,19 +36,17 @@
     "brace-expansion": "^5.0.5"
   },
   "devDependencies": {
-    "@eslint/js": "^9.22.0",
+    "@eslint/js": "^10.0.1",
     "@types/jest": "^30.0.0",
-    "@typescript-eslint/eslint-plugin": "^8.48.0",
-    "@typescript-eslint/parser": "^8.48.0",
-    "copyfiles": "^2.4.1",
-    "eslint": "^9.22.0",
+    "eslint": "^10.7.0",
     "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-prettier": "^5.5.4",
-    "jest": "^30.2.0",
-    "jiti": "^2.4.2",
-    "prettier": "^3.6.2",
-    "ts-jest": "^29.4.5",
+    "eslint-plugin-prettier": "^5.5.6",
+    "jest": "^30.4.2",
+    "jiti": "^2.7.0",
+    "prettier": "^3.9.5",
+    "ts-jest": "^29.4.11",
     "ts-node": "^10.9.2",
-    "typescript-eslint": "^8.48.0"
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.63.0"
   }
 }
