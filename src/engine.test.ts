@@ -143,12 +143,33 @@ describe('Engine', () => {
 
   it('should throw an error when maximum iterations is exceeded', async () => {
     const engine = new Engine(initialContext, rules, initialResult);
-    try {
-      await engine.run({ maxIterations: 1 });
-    } catch (e: unknown) {
-      expect(e).toBeInstanceOf(Error);
-      expect((e as Error).message).toBe('Rule engine exceeded maximum number of iterations');
-    }
+    await expect(engine.run({ maxIterations: 1 })).rejects.toThrow(
+      'Rule engine exceeded maximum number of iterations',
+    );
+  });
+
+  it('should return the final result from run', async () => {
+    const engine = new Engine(initialContext, rules, initialResult);
+    const result = await engine.run();
+    expect(result).toBe(engine.getResult());
+    expect(result).toEqual({ count: 3, flag: true });
+  });
+
+  it('should keep the result unchanged when an action returns no updates', async () => {
+    let fired = false;
+    const noUpdateRules: Array<Rule<TestContext, TestResult>> = [
+      {
+        name: 'No update',
+        evaluate: async (): Promise<boolean> => !fired,
+        action: async (): Promise<Partial<TestResult>> => {
+          fired = true;
+          return undefined as unknown as Partial<TestResult>;
+        },
+      },
+    ];
+    const engine = new Engine(initialContext, noUpdateRules, { count: 5 });
+    const result = await engine.run();
+    expect(result).toEqual({ count: 5 });
   });
 
   it('should use swapbuffer to store intermediate values', async () => {
