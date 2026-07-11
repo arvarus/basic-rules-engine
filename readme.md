@@ -60,6 +60,12 @@ console.log(ruleEngine.getResult());
 // { count: 3, flag: true }
 ```
 
+More runnable examples live in the [examples/](https://github.com/arvarus/basic-rules-engine/tree/master/examples) folder (not included in the npm package):
+
+- [01-counter.js](https://github.com/arvarus/basic-rules-engine/blob/master/examples/01-counter.js) — the basics: context, rules, result merging
+- [02-shopping-cart.js](https://github.com/arvarus/basic-rules-engine/blob/master/examples/02-shopping-cart.js) — ordered business rules (pricing and discounts)
+- [03-approval-workflow.js](https://github.com/arvarus/basic-rules-engine/blob/master/examples/03-approval-workflow.js) — `swapBuffer` and `maxIterations`
+
 ## API
 
 ### `new Engine(context, rules?, initialResult?)`
@@ -86,7 +92,7 @@ console.log(ruleEngine.getResult());
 | Method | Description |
 |---|---|
 | `setRules(rules)` | Replace the rule list (chainable) |
-| `setInitialResult(result)` | Set the initial result (chainable) |
+| `setInitialResult(result)` | Replace the current result (partial result accepted, chainable) |
 | `getResult()` | Return the current result |
 | `run(options?)` | Execute rules; resolves with the final result |
 
@@ -106,18 +112,26 @@ console.log(ruleEngine.getResult());
 ## Development
 
 ```bash
-npm run compile   # compile TypeScript
-npm test          # run tests with coverage
+npm run compile   # compile TypeScript (bin/, tests excluded)
+npm test          # run tests with coverage (100% enforced)
 npm run lint      # lint
 npm run format    # format with Prettier
 ```
 
+The package has no runtime dependencies. Tests enforce 100% code coverage (`coverageThreshold` in `jest.config.ts`).
+
 ## History
 
-- 2.2.x: Removed external `deep-freeze-strict` dependency (built-in implementation)
+- 3.0.x: 
+  - simplified build (no more `copyfiles`)
+  - `setInitialResult` accepts a partial result
+  - runnable `examples/` folder
+  - 100% coverage enforced, 
+  - `exports` field (internal modules like `deep-freeze` are no longer deep-importable)
+- 2.2.x: removed external `deep-freeze-strict` dependency (built-in implementation)
 - 2.1.x: `run` now accepts `RunOptions` (`maxIterations`)
 - 2.0.x: (Breaking change) `run` now returns the result
-- 1.0.x: Initial version
+- 1.0.x: initial version
 
 ## License
 

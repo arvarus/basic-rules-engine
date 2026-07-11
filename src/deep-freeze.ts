@@ -16,12 +16,13 @@
  */
 
 // inspired by deep-freeze-strict (MIT)
+const FUNCTION_PROPS_TO_SKIP = new Set(['caller', 'callee', 'arguments']);
+
 function deepFreeze<T>(o: T): T {
   Object.freeze(o);
   const isFunc = typeof o === 'function';
-  const skip = new Set(['caller', 'callee', 'arguments']);
   for (const prop of Object.getOwnPropertyNames(o)) {
-    if (isFunc && skip.has(prop)) continue;
+    if (isFunc && FUNCTION_PROPS_TO_SKIP.has(prop)) continue;
     const val = (o as Record<string, unknown>)[prop];
     if (
       val !== null &&
